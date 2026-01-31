@@ -33,6 +33,13 @@
                          (or load-file-name buffer-file-name))))
 
 (defvar json-par-test-running nil)
+(defvar json-par-test-jsonc-modes '((jsonc-mode js-indent-level)
+                                    (jsonian-c-mode jsonian-default-indentation)
+                                    (json-ts-mode json-ts-mode-indent-offset)))
+
+(defvar js-indent-level)
+(defvar jsonian-default-indentation)
+(defvar json-ts-mode-indent-offset)
 
 (defun json-par-setup-error-buffer ()
   "Initialize and switch to the error buffer.
@@ -47,6 +54,11 @@ Return the error-buffer"
 (defun json-par-run-test (&optional tests)
   "Run TESTS for `json-par-mode'."
   (interactive)
+  (require 'treesit nil t)
+  (json-par-ensure-json-ts-grammar)
+  (require 'json-mode nil t)
+  (require 'jsonian nil t)
+  (require 'json-ts-mode nil t)
   (unless tests
     (dolist (test-source (directory-files json-par-test-basedir
                                           t "json-par-test-.*.el"))
@@ -68,7 +80,17 @@ Return the error-buffer"
     (setq json-par-test-running t)
     (unwind-protect
         (dolist (test tests)
-          (funcall test error-buffer error-counts progress-reporter))
+          (dolist (tuple json-par-test-jsonc-modes)
+            (let ((mode (nth 0 tuple))
+                  (indent-level-variable (nth 1 tuple)))
+              (when (functionp mode)
+                (funcall
+                 test
+                 mode
+                 indent-level-variable
+                 error-buffer
+                 error-counts
+                 progress-reporter)))))
       (setq json-par-test-running nil))
     (when (not noninteractive)
       (progress-reporter-done progress-reporter))
@@ -116,6 +138,26 @@ Otherwise, MESSAGE is appended to the ERROR-BUFFER."
     (with-current-buffer error-buffer
       (goto-char (point-max))
       (insert-and-inherit message))))
+
+(defun json-par-ensure-json-ts-grammar ()
+  "Ensure tree-sitter grammar for JSON.
+
+If environment variable TREESIT_EXTRA_LOAD_PATH is set, set
+`treesit-extra-load-path' to it.
+
+Additionally, if the JSON grammar is not ready and `treesit' package is
+available, invoke `treesit-install-language-grammar'."
+  (when (getenv "TREESIT_EXTRA_LOAD_PATH")
+    (defvar treesit-extra-load-path)
+    (setq treesit-extra-load-path
+          (list (getenv "TREESIT_EXTRA_LOAD_PATH"))))
+  (when (and (functionp 'treesit-install-language-grammar)
+             (functionp 'treesit-ready-p)
+             (not (treesit-ready-p 'json t)))
+    (defvar treesit-language-source-alist)
+    (let ((treesit-language-source-alist
+           '((json "https://github.com/tree-sitter/tree-sitter-json/"))))
+      (treesit-install-language-grammar 'json))))
 
 (provide 'json-par-test)
 

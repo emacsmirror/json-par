@@ -4,3 +4,4 @@
 /dist/
 json-par-autoloads.el
 json-par-pkg.el
+/.tree-sitter/

@@ -4,9 +4,9 @@
 
 (eldev-add-loading-roots 'test "test")
 
-(eldev-add-extra-dependencies 'emacs 'json-mode)
-(eldev-add-extra-dependencies 'eval 'json-mode)
-(eldev-add-extra-dependencies 'test 'json-mode)
+(eldev-add-extra-dependencies '(emacs compile)
+                              'json-mode
+                              '(:package jsonian :optional t))
 
 (setf eldev-standard-excludes
       `(:or ,eldev-standard-excludes "./documents/"))

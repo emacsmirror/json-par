@@ -26,14 +26,18 @@
 
 ;;; Code:
 
-(require 'json-mode)
 (require 'json-par)
 (require 'json-par-test)
 
-(defun json-par-run-test-editing
-    (&optional error-buffer error-counts progress-reporter)
+(defun json-par-run-test-editing (&optional jsonc-mode
+                                            indent-level-variable
+                                            error-buffer
+                                            error-counts
+                                            progress-reporter)
   "Run editing test for `json-par-mode'.
 
+JSONC-MODE is a symbol of mode like `jsonc-mode' to run tests against.
+INDENT-LEVEL-VARIABLE is a symbol of variable for indentation level.
 ERROR-BUFFER is the buffer to output errors.
 ERROR-COUNTS is a association list holding counts of errors. Updated
 destructively.
@@ -100,6 +104,8 @@ PROGRESS-REPORTER is the progress-reporter."
              ((looking-at " *// *test-end")
               (let* ((status (json-par-test-editing-1
                               json-file
+                              jsonc-mode
+                              indent-level-variable
                               context-start-line
                               context-text
                               (reverse actions)
@@ -109,11 +115,19 @@ PROGRESS-REPORTER is the progress-reporter."
                 (setcdr count-assoc (1+ (cdr count-assoc))))))
             (forward-line)))))))
 
-(defun json-par-test-editing-1
-    (json-file line context-text actions expected-text error-buffer)
+(defun json-par-test-editing-1 (json-file
+                                jsonc-mode
+                                indent-level-variable
+                                line
+                                context-text
+                                actions
+                                expected-text
+                                error-buffer)
   "Run one editing test for command `json-par-mode'.
 
 JSON-FILE is the filename of the current test case.
+JSONC-MODE is a symbol of mode like `jsonc-mode' to run tests against.
+INDENT-LEVEL-VARIABLE is a symbol of variable for indentation level.
 LINE is the line number of the test case.
 CONTEXT-TEXT is the text before applying ACTIONS.
 ACTIONS is a list of expressions to be evaluated.
@@ -161,11 +175,11 @@ ERROR-BUFFER is the buffer to output errors."
          error-buffer json-file line
          "error"
          "editing: no initial point"))
-      (jsonc-mode)
+      (funcall jsonc-mode)
       (json-par-mode 1)
       (transient-mark-mode 1)
       (setq-local indent-tabs-mode nil)
-      (setq-local js-indent-level 4)
+      (set (make-local-variable indent-level-variable) 4)
       (if (number-or-marker-p initial-point)
           (goto-char initial-point)
         (goto-char (nth 0 initial-point))

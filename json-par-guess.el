@@ -217,6 +217,11 @@ colon."
 (defvar-local json-par--last-state nil
   "The last state of `json-par--guess-state'.")
 
+(defvar json-par--json-modes '(json-mode jsonian-mode json-ts-mode)
+  "Modes for searching guessed values/keys.
+
+Buffers with derived modes are also searched.")
+
 (defun json-par--guess-state-initialize (max-ancestors)
   "Return a new `json-par--guess-state'.
 
@@ -252,7 +257,7 @@ MAX-ANCESTORS is the max number of ancestors to search."
                (lambda (buffer)
                  (when (and (not (eq (current-buffer) buffer))
                             (with-current-buffer buffer
-                              (eq major-mode 'json-mode))
+                              (derived-mode-p json-par--json-modes))
                             (or (null json-par-friend-buffer-function)
                                 (funcall
                                  json-par-friend-buffer-function

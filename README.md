@@ -41,10 +41,14 @@ Install `json-par` package from MELPA.
 
 To install without MELPA, download [latest release](https://github.com/taku0/json-par/releases) and execute `M-x package-install-file` for the .tar archive.
 
-Then add the following line to your `.emacs`:
+Then add the following line to your `.emacs` depending on your base JSON mode:
 
 ```elisp
 (add-hook 'json-mode-hook (lambda () (json-par-mode 1)))
+;; or
+(add-hook 'jsonian-mode-hook (lambda () (json-par-mode 1)))
+;; or
+(add-hook 'json-ts-mode-hook (lambda () (json-par-mode 1)))
 ```
 
 Enabling [`aggressive-indent-mode`](https://github.com/Malabarba/aggressive-indent-mode) is also recommended.
@@ -54,8 +58,10 @@ Enabling [`aggressive-indent-mode`](https://github.com/Malabarba/aggressive-inde
 If you feel JSON Par mode officious, you can just pick a few functions and bind them to key sequences you like.  Example:
 
 ```elisp
-(require 'json-mode)
+(require 'json-mode) ;; or jsonian-mode or json-ts-mode
 (require 'json-par-mode)
+
+;; or jsonian-mode-map or json-ts-mode-map
 (define-key json-mode-map (kbd "M-/") #'json-par-insert-guessed)
 (define-key json-mode-map (kbd "C-c a") #'json-par-beginning-of-member)
 (define-key json-mode-map (kbd "C-c e") #'json-par-end-of-member)
